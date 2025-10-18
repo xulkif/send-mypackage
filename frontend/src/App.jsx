@@ -55,12 +55,12 @@ function App() {
     let data2 = WebApp.initDataUnsafe.user;
     console.log(data2, "initDataUnsef on App.jsx");
     console.log(data1, "iniData on App.jsx");
-
+    dispatch(CheckUser(user))
     if (data2) {
       dispatch(UserData(data2));
-      CheckUser(JSON.stringify(data1));
+      dispatch(CheckUser(data1));
     }
-  }, []);
+  },);
   const { city, loading } = useSelector((state) => state.citys);
   if (loading) {
     return <div>Loading...</div>;

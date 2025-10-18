@@ -1,7 +1,10 @@
 
+const crypto = require('crypto');
 
 const VerifyUser=async(req,res)=>{
+ 
     const { initData } = req.body;
+    console.log(initData,"initData come good")
     if (!initData || typeof initData !== "string") {
       return res.status(400).json({ ok: false, error: "Missing initData" });
     }
@@ -19,7 +22,7 @@ const VerifyUser=async(req,res)=>{
   
     // === CORRECT: secretKey = HMAC_SHA256(key = BOT_TOKEN, data = "WebAppData") ===
     const secretKey = crypto
-      .createHmac("sha256", BOT_TOKEN)   // BOT_TOKEN is HMAC key
+      .createHmac("sha256", process.env.BOT_TOKEN)   // BOT_TOKEN is HMAC key
       .update("WebAppData")              // message is the literal string
       .digest();                         // Buffer (binary key)
   

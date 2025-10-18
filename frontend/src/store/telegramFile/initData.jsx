@@ -11,11 +11,14 @@ const initialState = {
 };
 
 export const CheckUser = createAsyncThunk("checkUser", async (initData) => {
+  console.log("aaaa");
   try {
+   
+    
     if (initData) {
       const response = await axios.post(
-        "http://localhost:5000/api/check/user",
-        initData,
+        `${import.meta.env.VITE_BASE_URL}/api/check/user`,
+        { initData },
         {
           withCredentials: true,
         }
