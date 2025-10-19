@@ -26,7 +26,9 @@ export const CheckUser = createAsyncThunk("checkUser", async (initData) => {
 
       return response;
     }
-  } catch (e) {}
+  } catch (e) {
+    console.log(e)
+  }
 });
 
 const TelegramSlice = createSlice({
@@ -34,6 +36,8 @@ const TelegramSlice = createSlice({
   initialState,
   reducers: {
     UserData: (state, action) => {
+      console.log(action.payload,"action Payload");
+      
       state.testUser=action.payload
     },
     DemoData: (state, action) => {
