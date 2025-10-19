@@ -23,7 +23,10 @@ export const CheckUser = createAsyncThunk("checkUser", async (initData) => {
           withCredentials: true,
         }
       );
-
+      console.log(response,"response");
+      
+  console.log(response.payload ,"response.payload");
+  
       return response;
     }
   } catch (e) {
