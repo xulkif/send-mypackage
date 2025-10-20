@@ -1,79 +1,87 @@
-
 const crypto = require('crypto');
 
-const VerifyUser=async(req,res)=>{
- 
+
+const VerifyUser = async (req, res) => {
+    // NOTE: This assumes initData is sent in the request body as JSON: { initData: "..." }
     const { initData } = req.body;
-    console.log(initData,"initData come good")
+
+    // Retrieve BOT_TOKEN from environment variables
+    const BOT_TOKEN = process.env.BOT_TOKEN;
+    if (!BOT_TOKEN) {
+        console.error("Security Alert: BOT_TOKEN is not defined in environment variables.");
+        return res.status(500).json({ ok: false, error: "Internal server configuration error." });
+    }
+
     if (!initData || typeof initData !== "string") {
-      return res.status(400).json({ ok: false, error: "Missing initData" });
+        return res.status(400).json({ ok: false, error: "Missing or invalid initData" });
     }
-  
-    const urlParams = new URLSearchParams(initData);
-    const hash = urlParams.get("hash");
-    if (!hash) return res.status(400).json({ ok: false, error: "Missing hash" });
-  
-    urlParams.delete("hash");
-  
-    const dataCheckString = [...urlParams.entries()]
-      .map(([k, v]) => `${k}=${v}`)
-      .sort()
-      .join("\n");
-  
-    // === CORRECT: secretKey = HMAC_SHA256(key = BOT_TOKEN, data = "WebAppData") ===
-    const secretKey = crypto
-      .createHmac("sha256", process.env.BOT_TOKEN)   // BOT_TOKEN is HMAC key
-      .update("WebAppData")              // message is the literal string
-      .digest();                         // Buffer (binary key)
-  
-    const calculatedHash = crypto
-      .createHmac("sha256", secretKey)
-      .update(dataCheckString)
-      .digest();                         // Buffer for timingSafeEqual
-  
-    // Use constant-time compare
-    const incomingHashBuffer = Buffer.from(hash, "hex");
-    if (
-      incomingHashBuffer.length === calculatedHash.length &&
-      crypto.timingSafeEqual(incomingHashBuffer, calculatedHash)
-    ) {
-      /*Extra check: auth_date freshness
-      const authDate = Number(urlParams.get("auth_date") || 0);
-      if (!authDate || Math.abs(Math.floor(Date.now() / 1000) - authDate) > MAX_AGE_SECONDS) {
-        return res.status(403).json({ ok: false, error: "Stale auth_date" });
-      }*/
-  
-      const userStr = urlParams.get("user");
-      let user = null;
-      try {
-        user = JSON.parse(userStr);
-        console.log(user,"user");
+
+    try {
+        const urlParams = new URLSearchParams(initData);
         
-        return res.json({ ok: true, user });
-      } catch (e) {
-        return res.status(400).json({ ok: false, error: "Invalid user JSON" });
-      }
-  
-     
+        const hash = urlParams.get("hash");
+        if (!hash) {
+            return res.status(400).json({ ok: false, error: "Missing hash parameter in initData" });
+        }
+
+        // --- Prepare the data-check-string ---
+        
+        // 1. The 'hash' parameter is never part of the data-check-string.
+        urlParams.delete("hash");
+
+        // 2. The data you provided contained a non-standard 'signature' field. 
+        // We must ignore it, as Telegram does not include it in its hash calculation.
+        if (urlParams.has("signature")) {
+            urlParams.delete("signature"); // FIX: Remove non-standard signature field
+        }
+
+        const dataCheckArr = [];
+        
+        // Collect all remaining parameters in 'key=<value>' format.
+        for (const [key, value] of urlParams.entries()) {
+            dataCheckArr.push(`${key}=${value}`);
+        }
+        
+        // 3. The parameters MUST be sorted alphabetically and joined with a newline character.
+        const dataCheckString = dataCheckArr.sort().join("\n");
+
+        // --- Step 1: Generate the HMAC secret key ---
+        // CORRECTED FIX: The HMAC-key is "WebAppData", and the data is the BOT_TOKEN.
+        // This generates the 32-byte (256-bit) secret key buffer.
+        const secretKey = crypto
+            .createHmac("sha256", "WebAppData") // Key: literal string "WebAppData"
+            .update(BOT_TOKEN)                  // Data: Your Telegram Bot Token
+            .digest();                          // Output: Buffer (the secret key)
+
+        // --- Step 2: Calculate the hash of the data-check-string ---
+        const calculatedHash = crypto
+            .createHmac("sha256", secretKey)   // Key: The secret key Buffer from Step 1
+            .update(dataCheckString)           // Data: The sorted data-check-string
+            .digest('hex');                     // Output: Hexadecimal string for direct comparison
+
+        // --- Step 3: Compare hashes ---
+        if (calculatedHash === hash) {
+            console.log("✅ User data verified successfully!");
+            const userStr = urlParams.get("user");
+            if (userStr) {
+                 try {
+                     // URLSearchParams already decodes the values, so we just parse the JSON string.
+                     const user = JSON.parse(userStr);
+                     return res.json({ ok: true, user, message: "Validation success." });
+                 } catch (e) {
+                     return res.status(400).json({ ok: false, error: "Invalid user JSON format." });
+                 }
+            }
+            return res.json({ ok: true, message: "Validation successful." });
+        } else {
+            console.warn(`❌ Hash validation failed! Incoming Hash: ${hash}, Calculated Hash: ${calculatedHash}`);
+            return res.status(403).json({ ok: false, error: "Invalid hash: Message authentication failure." });
+        }
+
+    } catch (error) {
+        console.error("An unexpected error occurred during validation:", error);
+        return res.status(500).json({ ok: false, error: "Internal server error" });
     }
-  
-     
-}
+};
 
-
- 
-
-/*
-query_id=AAH3nF0AAAAA3nF0ABCD1234
-&user=%7B%22id%22%3A123456789%2C%22first_name%22%3A%22John%22%2C%22last_name%22%3A%22Doe%22%2C%22username%22%3A%22johndoe%22%2C%22language_code%22%3A%22en%22%7D
-&auth_date=1729164523
-&hash=5d3a8aefaf7cb98c8853b6de8e9a457e89f9a1cd14535e4ac6f6ef123456abcd
-*/
-
-
-
-
-
-
-
-module.exports={VerifyUser}
+module.exports = { VerifyUser };

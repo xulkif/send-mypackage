@@ -25,7 +25,7 @@ export const CheckUser = createAsyncThunk("checkUser", async (initData) => {
       );
       console.log(response,"response");
       
-  console.log(response.payload ,"response.payload");
+  console.log(response.user ,"response.payload");
   
       return response;
     }
