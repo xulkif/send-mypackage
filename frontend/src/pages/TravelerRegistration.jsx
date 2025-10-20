@@ -31,7 +31,7 @@ const TravelerRegistration = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Here you would typically send data to your backend
-    console.log('Traveler registration:', formData);
+    //console.log('Traveler registration:', formData);
     alert('Registration successful! You can now help others send packages.');
   };
 

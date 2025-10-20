@@ -5,7 +5,7 @@ import { UserData } from "../../store/telegramFile/initData"
 
 const UserHeader=()=>{
     const{testUser}=useSelector(state=>state.user)
-    console.log(testUser,"User header");
+     
     
     return<header className="w-full py-4 flex-col items-center  px-2 border-1 border-gray-100">
        <label> First Name{testUser?.first_name||""}</label>

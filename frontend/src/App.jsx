@@ -53,9 +53,7 @@ function App() {
     WebApp.ready();
     let data1 = WebApp.initData;
     let data2 = WebApp.initDataUnsafe.user;
-    console.log(data2, "initDataUnsafe on App.jsx");
-    console.log(data1, "initData on App.jsx");
-   
+    
     if (data2) {
       dispatch(UserData(data2));
       dispatch(CheckUser(data1));

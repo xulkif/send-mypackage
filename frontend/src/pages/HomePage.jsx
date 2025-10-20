@@ -202,7 +202,7 @@ const HomePage = () => {
 
   // FIX: HandleFilter now receives the NEW filters object from the child component
   const HandleFilter = (newFilters) => {
-     console.log(newFilters,'New Filters');  
+     
      
      const dataToFilter = userList; // Always filter from the original, full list
      let filtered = dataToFilter.filter(item => {

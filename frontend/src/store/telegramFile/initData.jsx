@@ -41,7 +41,7 @@ const TelegramSlice = createSlice({
   initialState,
   reducers: {
     UserData: (state, action) => {
-      console.log(action.payload,"action Payload");
+      //console.log(action.payload,"action Payload");
       
       state.testUser=action.payload
     },

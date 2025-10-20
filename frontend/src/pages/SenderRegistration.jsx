@@ -31,7 +31,7 @@ const SenderRegistration = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Here you would typically send data to your backend
-    console.log('Package registration:', formData);
+    
     alert('Package registered successfully! Travelers will be able to see your package.');
   };
 
