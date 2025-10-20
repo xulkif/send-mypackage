@@ -8,9 +8,8 @@ const verifyUserRoute=require("./routers/verifyUser-route")
 const app= express()
 
 // Middleware
-app.use(express.json({ limit: '10mb' }))
-app.use(express.urlencoded({ extended: true }))
-
+app.use(express.json())
+ 
 // CORS configuration
 app.use(cors({
     origin: process.env.Client_URL || "*", // Allow all origins if Client_URL not set
@@ -35,12 +34,7 @@ app.get("/api/test", (req, res) => {
 
 // Routes
 app.use("/api/check",verifyUserRoute)
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-    console.error('❌ Server Error:', err);
-    res.status(500).json({ ok: false, error: 'Internal server error' });
-});
+ 
 
 // 404 handler
 app.use('*', (req, res) => {
