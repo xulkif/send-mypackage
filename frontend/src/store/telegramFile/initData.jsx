@@ -12,6 +12,8 @@ const initialState = {
 
 export const CheckUser = createAsyncThunk("checkUser", async (initData) => {
   console.log("🚀 Starting CheckUser with initData:", initData);
+  console.log("🌐 API URL:", `${import.meta.env.VITE_BASE_URL}/api/check/user`);
+  
   try {
     if (initData) {
       const response = await axios.post(
@@ -19,12 +21,27 @@ export const CheckUser = createAsyncThunk("checkUser", async (initData) => {
         { initData },
         {
           withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+          }
         }
       );
       
       console.log("📡 Full response:", response);
-      console.log("👤 User data from response:", response.data.user);
-      console.log("✅ Response status:", response.data.ok);
+      console.log("📡 Response status:", response.status);
+      console.log("📡 Response headers:", response.headers);
+      console.log("📡 Response data:", response.data);
+      console.log("📡 Response data type:", typeof response.data);
+      console.log("📡 Response data length:", response.data?.length || 'N/A');
+      
+      // Check if response.data is empty string
+      if (response.data === "") {
+        console.error("❌ Empty response data received!");
+        throw new Error("Empty response from server");
+      }
+      
+      console.log("👤 User data from response:", response.data?.user);
+      console.log("✅ Response status:", response.data?.ok);
       
       // Return the data property which contains the actual response from server
       return response.data;
@@ -32,6 +49,8 @@ export const CheckUser = createAsyncThunk("checkUser", async (initData) => {
   } catch (error) {
     console.error("❌ Error in CheckUser:", error);
     console.error("❌ Error response:", error.response?.data);
+    console.error("❌ Error status:", error.response?.status);
+    console.error("❌ Error headers:", error.response?.headers);
     throw error; // Re-throw to trigger the rejected case
   }
 });
