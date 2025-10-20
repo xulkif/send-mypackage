@@ -65,10 +65,12 @@ const VerifyUser = async (req, res) => {
             const userStr = urlParams.get("user");
             if (userStr) {
                  try {
-                     // URLSearchParams already decodes the values, so we just parse the JSON string.
-                     
-                     return res.json({ ok: true, user:userStr, message: "Validation success." });
+                     // Parse the user JSON string to return as an object
+                     const userData = JSON.parse(userStr);
+                     console.log("✅ Parsed user data:", userData);
+                     return res.json({ ok: true, user: userData, message: "Validation success." });
                  } catch (e) {
+                     console.error("❌ Error parsing user JSON:", e);
                      return res.status(400).json({ ok: false, error: "Invalid user JSON format." });
                  }
             }

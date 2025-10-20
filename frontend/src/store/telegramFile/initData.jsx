@@ -11,10 +11,8 @@ const initialState = {
 };
 
 export const CheckUser = createAsyncThunk("checkUser", async (initData) => {
-  console.log("aaaa");
+  console.log("🚀 Starting CheckUser with initData:", initData);
   try {
-   
-    
     if (initData) {
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/api/check/user`,
@@ -23,14 +21,18 @@ export const CheckUser = createAsyncThunk("checkUser", async (initData) => {
           withCredentials: true,
         }
       );
-      console.log(response,"response");
       
-  console.log(response.user ,"response.payload");
-  
-      return response;
+      console.log("📡 Full response:", response);
+      console.log("👤 User data from response:", response.data.user);
+      console.log("✅ Response status:", response.data.ok);
+      
+      // Return the data property which contains the actual response from server
+      return response.data;
     }
-  } catch (e) {
-    console.log(e)
+  } catch (error) {
+    console.error("❌ Error in CheckUser:", error);
+    console.error("❌ Error response:", error.response?.data);
+    throw error; // Re-throw to trigger the rejected case
   }
 });
 
@@ -51,15 +53,27 @@ const TelegramSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(CheckUser.fulfilled, (state, action) => {
-        state.user = action.payload;
-        state.isAuthenticated = true;
+        console.log("🎉 CheckUser fulfilled with payload:", action.payload);
+        if (action.payload.ok && action.payload.user) {
+          state.user = action.payload.user;
+          state.isAuthenticated = true;
+          console.log("✅ User authenticated:", action.payload.user);
+        } else {
+          console.warn("⚠️ Authentication failed - invalid response");
+          state.isAuthenticated = false;
+        }
         state.loading = false;
       })
       .addCase(CheckUser.rejected, (state, action) => {
+        console.error("❌ CheckUser rejected:", action.error);
         state.loading = false;
+        state.isAuthenticated = false;
+        state.error = action.error.message;
       })
       .addCase(CheckUser.pending, (state, action) => {
+        console.log("⏳ CheckUser pending...");
         state.loading = true;
+        state.error = null;
       });
   },
 });
