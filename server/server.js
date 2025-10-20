@@ -12,7 +12,7 @@ app.use(express.json())
  
 // CORS configuration
 app.use(cors({
-    origin: process.env.Client_URL || "*", // Allow all origins if Client_URL not set
+    origin: process.env.Client_URL, // Allow all origins if Client_URL not set
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
@@ -36,8 +36,8 @@ app.get("/api/test", (req, res) => {
 app.use("/api/check",verifyUserRoute)
  
 
-// 404 handler
-app.use('*', (req, res) => {
+// ✅ FIX: Use '/*' to catch all remaining routes
+app.use((req, res) => {
     console.log(`❌ 404 - Route not found: ${req.method} ${req.originalUrl}`);
     res.status(404).json({ ok: false, error: 'Route not found' });
 });
@@ -47,6 +47,5 @@ const PORT=5000
 app.listen(PORT,()=>{
     console.log("🚀 App is running on the port 5000")
     console.log("🌐 Environment:", process.env.NODE_ENV || 'development')
-    console.log("🔑 BOT_TOKEN exists:", !!process.env.BOT_TOKEN)
     console.log("🌍 Client URL:", process.env.Client_URL || 'Not set')
 })
