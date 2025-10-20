@@ -46,6 +46,6 @@ const PORT=5000
 
 app.listen(PORT,()=>{
     console.log("🚀 App is running on the port 5000")
-    console.log("🌐 Environment:", process.env.NODE_ENV || 'development')
+   
     console.log("🌍 Client URL:", process.env.Client_URL || 'Not set')
 })
